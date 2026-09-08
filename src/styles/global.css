@@ -1,0 +1,402 @@
+/* ============================================================
+   脊线 RIDGELINE — 设计系统
+   概念：耐用不是形容词，是可以缝进洗标的实测数据。
+   视觉语言取自野外科考器材标签与材料试验报告。
+   ============================================================ */
+
+:root {
+  /* —— 色：材料名，不是抽象色名 —— */
+  --concrete: #dcdDD6;
+  --basalt: #1a201e;
+  --basalt-lift: #242c29;
+  --blaze: #ee5a1c; /* 信号色：仅用于可操作项与危险带 */
+  --blaze-deep: #c44a12;
+  --glacier: #7a96a6; /* 水 / 低温数据线 */
+  --moss: #4e6151; /* 等高线 / 次级文字 */
+  --paper: #f4f5f0;
+  --ink: #1a201e;
+  --ink-2: #4c564f;
+  --on-dark: #e9ebe4;
+  --on-dark-2: #9ba89d;
+  --line: rgba(26, 32, 30, 0.16);
+  --line-strong: rgba(26, 32, 30, 0.45);
+  --line-dark: rgba(233, 235, 228, 0.2);
+  --line-dark-strong: rgba(233, 235, 228, 0.5);
+  --focus: #ee5a1c;
+
+  /* —— 字 —— */
+  --f-display: 'Big Shoulders Display', 'Arial Narrow', 'Helvetica Neue', sans-serif;
+  --f-sans: 'IBM Plex Sans', -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  /* —— 尺度 —— */
+  --container: 1320px;
+  --gutter: clamp(20px, 4.4vw, 64px);
+  --space-block: clamp(72px, 10vw, 124px);
+  --radius: 3px;
+  --radius-lg: 6px;
+  --header-h: 68px;
+
+  /* —— 动效 —— */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur: 260ms;
+}
+
+/* ============================ reset ============================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-h) + 18px);
+}
+
+body {
+  background: var(--concrete);
+  color: var(--ink);
+  font-family: var(--f-sans);
+  font-size: 16px;
+  line-height: 1.66;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul,
+ol {
+  list-style: none;
+  padding: 0;
+}
+
+:target {
+  scroll-margin-top: calc(var(--header-h) + 18px);
+}
+
+/* ========================= 排版原语 ========================= */
+.t-display {
+  font-family: var(--f-display);
+  font-weight: 800;
+  line-height: 0.84;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+}
+
+.t-h1 {
+  font-size: clamp(2.5rem, 7.4vw, 5.1rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+.t-h2 {
+  font-size: clamp(1.75rem, 3.3vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+}
+
+.t-h3 {
+  font-size: clamp(1.15rem, 1.7vw, 1.4rem);
+  font-weight: 600;
+  line-height: 1.28;
+  letter-spacing: -0.015em;
+}
+
+.t-lede {
+  font-size: clamp(1rem, 1.15vw, 1.09rem);
+  line-height: 1.72;
+  color: var(--ink-2);
+  max-width: 46ch;
+}
+
+/* 数值：只在真正需要数位对齐的地方使用等宽 */
+.t-data {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.t-micro {
+  font-size: 0.7rem;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: var(--ink-2);
+}
+
+.on-dark .t-lede,
+.on-dark.t-lede {
+  color: var(--on-dark-2);
+}
+
+.on-dark .t-micro {
+  color: var(--on-dark-2);
+}
+
+/* ========================= 布局骨架 ========================= */
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section {
+  padding-block: var(--space-block);
+  position: relative;
+}
+
+.on-dark {
+  background: var(--basalt);
+  color: var(--on-dark);
+}
+
+.section-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 26ch);
+  gap: clamp(20px, 4vw, 56px);
+  align-items: end;
+  margin-bottom: clamp(30px, 4vw, 52px);
+}
+
+.section-head__title {
+  max-width: 24ch;
+}
+
+@media (max-width: 900px) {
+  .section-head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+  }
+}
+
+/* 结构线：顶边实线 + 等距刻度，承载“测量”语义 */
+.tick-rule {
+  height: 6px;
+  background:
+    linear-gradient(var(--line-strong), var(--line-strong)) top / 100% 1px no-repeat,
+    repeating-linear-gradient(90deg, var(--line-strong) 0 1px, transparent 1px 44px);
+  opacity: 0.55;
+}
+
+.on-dark .tick-rule {
+  background:
+    linear-gradient(var(--line-dark-strong), var(--line-dark-strong)) top / 100% 1px no-repeat,
+    repeating-linear-gradient(90deg, var(--line-dark-strong) 0 1px, transparent 1px 44px);
+}
+
+/* 危险带：全站唯一的强装饰，只出现在洗标卡与页脚 */
+.hazard {
+  height: 9px;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--blaze) 0 9px,
+    var(--basalt) 9px 18px
+  );
+}
+
+/* 洗标卡：品牌的识别物件 */
+.care-label {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 0 0 4px var(--paper), 0 0 0 5px var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* ========================= 交互控件 ========================= */
+.btn {
+  --btn-bg: var(--blaze);
+  --btn-fg: var(--basalt);
+  --btn-bd: var(--blaze);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 1px solid var(--btn-bd);
+  border-radius: var(--radius);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition:
+    transform var(--dur) var(--ease),
+    background-color var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 -2px rgba(26, 32, 30, 0.28);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn[disabled] {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn--ghost {
+  --btn-bg: transparent;
+  --btn-fg: currentColor;
+  --btn-bd: var(--line-strong);
+}
+
+.on-dark .btn--ghost {
+  --btn-bd: var(--line-dark-strong);
+}
+
+.btn--ghost:hover {
+  --btn-bg: rgba(26, 32, 30, 0.06);
+  box-shadow: none;
+  transform: none;
+}
+
+.on-dark .btn--ghost:hover {
+  --btn-bg: rgba(233, 235, 228, 0.1);
+}
+
+.btn--sm {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 0.85rem;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+/* 可访问焦点 */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -100px;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--blaze);
+  color: var(--basalt);
+  font-weight: 600;
+  border-radius: var(--radius);
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* 状态灯：预订清单/名额等实时状态 */
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--blaze);
+  flex: none;
+}
+
+.dot--live {
+  animation: pulse 2.4s var(--ease) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(238, 90, 28, 0.55);
+  }
+  60% {
+    box-shadow: 0 0 0 7px rgba(238, 90, 28, 0);
+  }
+}
+
+/* 数字滚动与等高线入场共用一次编排 */
+@keyframes draw-in {
+  from {
+    stroke-dashoffset: var(--dash, 1200);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .btn:hover {
+    transform: none;
+  }
+}
