@@ -1707,6 +1707,10 @@ legend.field__label {
   font-size: 0.84rem;
 }
 
+.receipt__lines .receipt__empty {
+  display: block;
+}
+
 .receipt__note {
   margin: 14px clamp(18px, 2.6vw, 26px) 0;
   padding: 10px 12px;

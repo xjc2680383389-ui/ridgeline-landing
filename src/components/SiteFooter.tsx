@@ -48,8 +48,7 @@ export function SiteFooter() {
             ))}
           </ul>
           <p className="site-footer__legal t-micro">
-            © 2026 脊线户外运动用品（成都）有限公司 · 本页全部数值为自有材料室实测，方法标准号见实测区 ·
-            蜀 ICP 备 2011042713 号
+            © 2026 RIDGELINE · 虚构品牌概念展示；企业、地址、测试数据及商品信息为演示内容。
           </p>
         </div>
       </div>

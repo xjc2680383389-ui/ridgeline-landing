@@ -18,13 +18,13 @@ const EMPTY: PreorderForm = {
 const validators: Record<FieldName, (value: string) => string | null> = {
   name: (value) => {
     const trimmed = value.trim();
-    if (!trimmed) return '请填写收货人姓名，物流需要实名。';
+    if (!trimmed) return '请填写测试姓名。';
     if (trimmed.length < 2) return '姓名至少 2 个字符。';
     return null;
   },
   phone: (value) => {
     const trimmed = value.trim();
-    if (!trimmed) return '请填写手机号，排产与发货通知会发到这里。';
+    if (!trimmed) return '请填写测试手机号，仅用于本地表单演示。';
     if (!/^1[3-9]\d{9}$/.test(trimmed)) return '手机号格式不对，应为 11 位数字。';
     return null;
   },
@@ -97,7 +97,7 @@ export function PreorderSection() {
             预订按批次投产，不做多余库存。
           </h2>
           <p className="t-lede">
-            选好尺码与配色后提交，我们按批次排产。第一批名额剩余 {BATCHES[0].seatsLeft} 位，提交后会收到确认与排产进度。
+            本页为虚构品牌演示。选择装备后可在此浏览器保存清单；不会发送给商家、下单、付款或发送短信。
           </p>
         </header>
 
@@ -117,7 +117,7 @@ export function PreorderSection() {
                   <a href="#catalog" className="listing__empty-link">
                     去装备区看五款产品
                   </a>
-                  ，或者直接提交一份批次意向，开放时我们通知你。
+                  ，或者保存一份不含装备的本地批次意向。
                 </p>
               ) : (
                 <ul className="listing__lines" role="list">
@@ -182,7 +182,7 @@ export function PreorderSection() {
             </section>
 
             <ul className="preorder__terms" role="list">
-              <li>提交不扣款，排产前二次确认尺码与金额</li>
+              <li>演示操作不扣款，不会创建订单或开始排产</li>
               <li>尺码不合可免费换一次，来回运费我们承担</li>
               <li>3 000 公里质保，拉链 / 扣具 / 内衬备件单卖十年</li>
             </ul>
@@ -193,7 +193,7 @@ export function PreorderSection() {
           ) : (
             <form className="preorder__form care-label" ref={formRef} onSubmit={onSubmit} noValidate>
               <header className="preorder__form-head">
-                <h3 className="t-h3">{lines.length ? '提交预订' : '提交批次意向'}</h3>
+                <h3 className="t-h3">{lines.length ? '保存演示清单' : '保存本地批次意向'}</h3>
                 <span className="t-micro">带 * 的为必填项</span>
               </header>
 
@@ -256,13 +256,13 @@ export function PreorderSection() {
                     onBlur={() => handleBlur('email')}
                     aria-invalid={Boolean(errors.email) || undefined}
                     aria-describedby={errors.email ? 'email-error' : 'email-hint'}
-                    placeholder="用于接收实测报告"
+                    placeholder="test@example.com（选填）"
                     autoComplete="email"
                   />
                   <FieldError id="email-error" message={errors.email} />
                   {!errors.email && (
                     <p className="field__hint" id="email-hint">
-                      留空也可以，排产通知走短信。
+                      留空也可以；本页不会发送邮件或短信。
                     </p>
                   )}
                 </div>
@@ -333,7 +333,7 @@ export function PreorderSection() {
                     aria-describedby={errors.terms ? 'terms-error' : undefined}
                   />
                   <span>
-                    我已阅读<a href="#proof">3 000 公里质保</a>与退换说明，同意按批次排产。
+                    我已了解本页为概念演示，<a href="#proof">质保与测试资料</a>为展示内容。
                   </span>
                 </label>
                 <FieldError id="terms-error" message={errors.terms} />
@@ -344,18 +344,18 @@ export function PreorderSection() {
                   {submitting ? (
                     <>
                       <span className="spinner" aria-hidden="true" />
-                      提交中
+                      保存中
                     </>
                   ) : lines.length ? (
-                    `提交预订 · ${formatPrice(subtotal)}`
+                    `保存演示清单 · ${formatPrice(subtotal)}`
                   ) : (
-                    '提交批次意向'
+                    '保存本地批次意向'
                   )}
                 </button>
                 <p className="field__hint preorder__hint" aria-live="polite">
                   {Object.values(errors).some(Boolean)
-                    ? '还有字段需要修正，检查后再次提交。'
-                    : '提交后 24 小时内收到确认；未确认前排产不会开始。'}
+                    ? '还有字段需要修正，检查后再次保存。'
+                    : '演示清单仅保存在当前浏览器，请勿填写真实联系方式。'}
                 </p>
               </div>
             </form>
@@ -391,10 +391,9 @@ function ReceiptCard({ batchLabel }: { batchLabel: string }) {
       <div className="receipt__head">
         <span className="receipt__check" aria-hidden="true" />
         <div>
-          <h3 className="t-h3">预订已提交</h3>
+          <h3 className="t-h3">演示清单已保存</h3>
           <p className="t-micro">
-            确认短信已发往 {receipt.phone.slice(0, 3)}****{receipt.phone.slice(-4)}
-            {receipt.email ? `，实测报告将发往 ${receipt.email}` : ''}
+            清单仅保存在此浏览器。未发送短信或邮件，未形成订单。
           </p>
         </div>
       </div>
@@ -414,7 +413,7 @@ function ReceiptCard({ batchLabel }: { batchLabel: string }) {
           <dd>{batchLabel}</dd>
         </div>
         <div>
-          <dt>提交时间</dt>
+          <dt>保存时间</dt>
           <dd className="t-data">{formatDateTime(receipt.placedAt)}</dd>
         </div>
         <div>
@@ -438,20 +437,20 @@ function ReceiptCard({ batchLabel }: { batchLabel: string }) {
             </li>
           );
         })}
-        {items.length === 0 && <li className="t-micro">意向预订：批次开放时按你的联系方式通知。</li>}
+        {items.length === 0 && <li className="receipt__empty t-micro">尚未添加装备，可返回编辑并选择商品；此清单不会触发通知。</li>}
       </ul>
 
       {receipt.note && <p className="receipt__note">备注：{receipt.note}</p>}
 
       <ol className="receipt__next" role="list">
         <li>
-          <strong>24 小时内</strong> 收到排产确认，核对尺码与金额
+          <strong>本地保存</strong> 刷新后可在同一浏览器恢复清单
         </li>
         <li>
-          <strong>裁剪前</strong> 可免费改一次尺码
+          <strong>继续编辑</strong> 可修改尺码、数量和备注
         </li>
         <li>
-          <strong>{batchLabel.split(' · ')[1]}</strong> 发货，附该批实测报告
+          <strong>概念展示</strong> 商品、批次和价格均为演示资料
         </li>
       </ol>
 
