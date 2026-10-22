@@ -5,10 +5,10 @@ import {
   useEffect,
   useMemo,
   useReducer,
-  useRef,
+  useState,
   type ReactNode,
 } from 'react';
-import { PRODUCTS, getProduct } from '../data/catalog';
+import { getProduct } from '../data/catalog';
 import { makeReference } from '../lib/format';
 
 export interface PreorderLine {
@@ -71,6 +71,32 @@ const STORAGE_KEY = 'ridgeline.preorder.v1';
 const initialState: State = { lines: [], receipt: null, submitting: false, notice: null };
 
 const lineKey = (line: Omit<PreorderLine, 'key' | 'qty'>) => `${line.productId}|${line.size}|${line.color}`;
+
+export function parseSavedPreorder(raw: string | null): Pick<State, 'lines' | 'receipt'> {
+  const empty = { lines: [], receipt: null };
+  try {
+    const parsed = JSON.parse(raw ?? 'null');
+    if (!parsed || typeof parsed !== 'object') return empty;
+    const validLine = (line: PreorderLine): boolean => {
+      if (!line || typeof line !== 'object') return false;
+      const product = getProduct(line.productId);
+      return Boolean(product && product.sizes.includes(line.size)
+        && product.colorways.some((color) => color.name === line.color)
+        && Number.isInteger(line.qty) && line.qty >= 1 && line.qty <= 20);
+    };
+    const normalize = (line: PreorderLine) => ({ ...line, key: lineKey(line) });
+    const lines = Array.isArray(parsed.lines) ? parsed.lines.filter(validLine).map(normalize) : [];
+    const candidate = parsed.receipt;
+    const receipt = candidate && typeof candidate === 'object'
+      && ['ref', 'placedAt', 'name', 'phone', 'email', 'batchId', 'note', 'terms'].every((key) => typeof candidate[key] === 'string')
+      && Number.isFinite(Date.parse(candidate.placedAt))
+      && Array.isArray(candidate.lines) && candidate.lines.every(validLine)
+      ? { ...candidate, lines: candidate.lines.map(normalize) } : null;
+    return { lines, receipt };
+  } catch {
+    return empty;
+  }
+}
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -145,27 +171,20 @@ const PreorderContext = createContext<PreorderApi | null>(null);
 
 export function PreorderProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const hydrated = useRef(false);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Partial<State>;
-        const validIds = new Set(PRODUCTS.map((p) => p.id));
-        const lines = (parsed.lines ?? []).filter(
-          (line) => line && validIds.has(line.productId) && line.qty > 0,
-        );
-        dispatch({ type: 'hydrate', lines, receipt: parsed.receipt ?? null });
-      }
+      const saved = parseSavedPreorder(localStorage.getItem(STORAGE_KEY));
+      dispatch({ type: 'hydrate', ...saved });
     } catch {
       /* 本地缓存不可用时按空清单开始 */
     }
-    hydrated.current = true;
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
-    if (!hydrated.current) return;
+    if (!hydrated) return;
     try {
       localStorage.setItem(
         STORAGE_KEY,
@@ -174,7 +193,7 @@ export function PreorderProvider({ children }: { children: ReactNode }) {
     } catch {
       /* 隐私模式下忽略写入失败 */
     }
-  }, [state.lines, state.receipt]);
+  }, [hydrated, state.lines, state.receipt]);
 
   const notify = useCallback((text: string | null) => dispatch({ type: 'notice', text }), []);
 
@@ -225,7 +244,7 @@ export function PreorderProvider({ children }: { children: ReactNode }) {
             lines: state.lines,
           };
           dispatch({ type: 'submitted', receipt });
-          notify(`预订已提交，编号 ${receipt.ref}`);
+          notify(`演示清单已保存在此浏览器，编号 ${receipt.ref}`);
           resolve(receipt);
         }, 900);
       });
